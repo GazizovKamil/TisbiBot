@@ -41,39 +41,26 @@ class Program
     // Асинхронный метод для обработки входящих обновлений
     static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        if (update.Type == UpdateType.Message && update.Message!.Type == MessageType.Text)
+        long chatId;
+
+        if (update.Type == UpdateType.Message && update.Message is { } message)
         {
-            var message = update.Message;
-            var chatId = message.Chat.Id;
-            var messageText = message.Text;
-
-            Console.WriteLine($"Received a message from {chatId}: {messageText}");
-
-            // Отправляем клавиатуру с 3 кнопками
-            var inlineKeyboard = new InlineKeyboardMarkup(new[]
-            {
-                new []
-                {
-                    InlineKeyboardButton.WithCallbackData("Смешной стикер", "sticker_1"),
-                    InlineKeyboardButton.WithCallbackData("Смешной gif", "sticker_2"),
-                    InlineKeyboardButton.WithCallbackData("Смешная картинка", "sticker_3"),
-                    InlineKeyboardButton.WithCallbackData("Смешной кружок", "circle_1"),
-                }
-            });
-
-            await botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "Выберите стикер:",
-                replyMarkup: inlineKeyboard,
-                cancellationToken: cancellationToken
-            );
+            chatId = message.Chat.Id;
         }
-        else if (update.Type == UpdateType.CallbackQuery)
+        else if (update.Type == UpdateType.CallbackQuery && update.CallbackQuery.Message is { } msg)
+        {
+            chatId = msg.Chat.Id;
+        }
+        else
+        {
+            // Если тип обновления не поддерживается, выходим из метода
+            return;
+        }
+        
+        if (update.Type == UpdateType.CallbackQuery)
         {
             var callbackQuery = update.CallbackQuery!;
-            var chatId = callbackQuery.Message!.Chat.Id;
 
-            // Обрабатываем нажатие кнопки и отправляем соответствующий стикер и текст
             switch (callbackQuery.Data)
             {
                 case "sticker_1":
@@ -82,24 +69,42 @@ class Program
                     break;
 
                 case "sticker_2":
-                    // Отправляем GIF через file_id
                     await botClient.SendAnimationAsync(chatId, "CgACAgIAAxkBAAOZZum39D-veBmuyNnPCBs_h0shTHwAAtZRAAJM__BKINSk6E2bzgo2BA", cancellationToken: cancellationToken);
                     await botClient.SendTextMessageAsync(chatId, "Вот вам смешной GIF!", cancellationToken: cancellationToken);
                     break;
 
                 case "sticker_3":
-                    // Отправляем изображение через file_id
                     await botClient.SendPhotoAsync(chatId, "AgACAgIAAxkBAAOXZum32XPZ0Gj2malRqf1Xsra1aiAAAkDgMRtdIUhLBHyCpfDOcIUBAAMCAAN5AAM2BA", cancellationToken: cancellationToken);
                     await botClient.SendTextMessageAsync(chatId, "Вот вам смешное изображение!", cancellationToken: cancellationToken);
                     break;
                 case "circle_1":
-                    // Отправляем кружок через file_id (замените на действительный file_id)
                     await botClient.SendVideoNoteAsync(chatId, "DQACAgIAAxkBAAP2ZunTg3i3f0oP5DjBlXO5_r6z1XAAAtpWAAKI4yBLK7FsZNsf33I2BA", cancellationToken: cancellationToken);
                     await botClient.SendTextMessageAsync(chatId, "Вот вам кружок!", cancellationToken: cancellationToken);
                     break;
             }
 
         }
+
+        var inlineKeyboard = new InlineKeyboardMarkup(new[]
+        {
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("Смешной стикер", "sticker_1"),
+                InlineKeyboardButton.WithCallbackData("Смешной gif", "sticker_2")
+            },
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("Смешная картинка", "sticker_3"),
+                InlineKeyboardButton.WithCallbackData("Смешной кружок", "circle_1")
+            }
+        });
+
+        await botClient.SendTextMessageAsync(
+            chatId: chatId,
+            text: "Выберите стикер:",
+            replyMarkup: inlineKeyboard,
+            cancellationToken: cancellationToken
+        );
     }
 
     //static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
@@ -115,7 +120,6 @@ class Program
     //    }
     //}
 
-    // Метод для обработки ошибок
     static Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
         var errorMessage = exception switch
