@@ -54,9 +54,10 @@ class Program
             {
                 new []
                 {
-                    InlineKeyboardButton.WithCallbackData("Смешной стикер 1", "sticker_1"),
-                    InlineKeyboardButton.WithCallbackData("Смешной стикер 2", "sticker_2"),
-                    InlineKeyboardButton.WithCallbackData("Смешной стикер 3", "sticker_3"),
+                    InlineKeyboardButton.WithCallbackData("Смешной стикер", "sticker_1"),
+                    InlineKeyboardButton.WithCallbackData("Смешной gif", "sticker_2"),
+                    InlineKeyboardButton.WithCallbackData("Смешная картинка", "sticker_3"),
+                    InlineKeyboardButton.WithCallbackData("Смешной кружок", "circle_1"),
                 }
             });
 
@@ -77,7 +78,7 @@ class Program
             {
                 case "sticker_1":
                     await botClient.SendStickerAsync(chatId, "CAACAgIAAxkBAAEtvSVm6bMWhioptc4iYTF2Wh2xTLdP6gACNDoAArR2CUgmpTx1tcQieDYE", cancellationToken: cancellationToken);
-                    await botClient.SendTextMessageAsync(chatId, "Вот вам смешной стикер 1!", cancellationToken: cancellationToken);
+                    await botClient.SendTextMessageAsync(chatId, "Вот вам смешной стикер!", cancellationToken: cancellationToken);
                     break;
 
                 case "sticker_2":
@@ -91,6 +92,11 @@ class Program
                     await botClient.SendPhotoAsync(chatId, "AgACAgIAAxkBAAOXZum32XPZ0Gj2malRqf1Xsra1aiAAAkDgMRtdIUhLBHyCpfDOcIUBAAMCAAN5AAM2BA", cancellationToken: cancellationToken);
                     await botClient.SendTextMessageAsync(chatId, "Вот вам смешное изображение!", cancellationToken: cancellationToken);
                     break;
+                case "circle_1":
+                    // Отправляем кружок через file_id (замените на действительный file_id)
+                    await botClient.SendVideoNoteAsync(chatId, "DQACAgIAAxkBAAP2ZunTg3i3f0oP5DjBlXO5_r6z1XAAAtpWAAKI4yBLK7FsZNsf33I2BA", cancellationToken: cancellationToken);
+                    await botClient.SendTextMessageAsync(chatId, "Вот вам кружок!", cancellationToken: cancellationToken);
+                    break;
             }
 
         }
@@ -98,10 +104,10 @@ class Program
 
     //static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     //{
-    //    if (update.Message is Message message && message.Animation is not null)
+    //    if (update.Message is Message message && message.VideoNote is not null)
     //    {
     //        // Получаем идентификатор фотографии
-    //        var fileId = message.Animation.FileId;
+    //        var fileId = message.VideoNote.FileId;
     //        Console.WriteLine($"File ID: {fileId}");
 
     //        // Отправляем его обратно пользователю
