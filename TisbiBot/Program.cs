@@ -10,6 +10,8 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 class Program
 {
+    static bool isWaitFile = false;
+
     static async Task Main(string[] args)
     {
         // Создаем экземпляр клиента Telegram Bot с помощью токена вашего бота
@@ -82,7 +84,52 @@ class Program
                     await botClient.SendTextMessageAsync(chatId, "Вот вам кружок!", cancellationToken: cancellationToken);
                     break;
             }
+        }
 
+        if (update.Type == UpdateType.Message && update.Message!.Type == MessageType.Text)
+        {
+            if(update.Message.Text == "/add")
+            {
+                await botClient.SendTextMessageAsync(chatId, "Отправьте файл, который хотите.", cancellationToken: cancellationToken);
+                isWaitFile = true;
+                return;
+            }
+        }
+
+        if (isWaitFile)
+        {
+            if (update.Message.VideoNote != null)
+            {
+                var fileId = update.Message.VideoNote.FileId;
+                Console.WriteLine($"Received VideoNote with File ID: {fileId}");
+                await botClient.SendTextMessageAsync(chatId, $"Ваш VideoNote file_id: {fileId}", cancellationToken: cancellationToken);
+                isWaitFile = false; // Останавливаем ожидание файла
+                return;
+            }
+            if (update.Message.Photo != null)
+            {
+                var fileId = update.Message.Photo.Last().FileId;
+                Console.WriteLine($"Received Photo with File ID: {fileId}");
+                await botClient.SendTextMessageAsync(chatId, $"Ваш Photo file_id: {fileId}", cancellationToken: cancellationToken);
+                isWaitFile = false; // Останавливаем ожидание файла
+                return;
+            }
+            if (update.Message.Animation != null)
+            {
+                var fileId = update.Message.Animation.FileId;
+                Console.WriteLine($"Received Animation with File ID: {fileId}");
+                await botClient.SendTextMessageAsync(chatId, $"Ваш Animation file_id: {fileId}", cancellationToken: cancellationToken);
+                isWaitFile = false; // Останавливаем ожидание файла
+                return;
+            }
+            if (update.Message.Sticker != null)
+            {
+                var fileId = update.Message.Sticker.FileId;
+                Console.WriteLine($"Received Sticker with File ID: {fileId}");
+                await botClient.SendTextMessageAsync(chatId, $"Ваш Sticker file_id: {fileId}", cancellationToken: cancellationToken);
+                isWaitFile = false; // Останавливаем ожидание файла
+                return;
+            }
         }
 
         var inlineKeyboard = new InlineKeyboardMarkup(new[]
@@ -106,19 +153,6 @@ class Program
             cancellationToken: cancellationToken
         );
     }
-
-    //static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-    //{
-    //    if (update.Message is Message message && message.VideoNote is not null)
-    //    {
-    //        // Получаем идентификатор фотографии
-    //        var fileId = message.VideoNote.FileId;
-    //        Console.WriteLine($"File ID: {fileId}");
-
-    //        // Отправляем его обратно пользователю
-    //        await botClient.SendTextMessageAsync(chatId: message.Chat.Id, text: $"Ваш file_id: {fileId}", cancellationToken: cancellationToken);
-    //    }
-    //}
 
     static Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
